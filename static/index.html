@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Splitter Sequential - V2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header .version {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .destinations-container {
+            border: 2px dashed #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .destination-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .destination-item input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        
+        .splits-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .splits-table th,
+        .splits-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .splits-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .split-url {
+            background: #e3f2fd;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .split-url:hover {
+            background: #bbdefb;
+        }
+        
+        .sequential-badge {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 URL Splitter Sequential</h1>
+            <div class="version">V2 - Distribuição Sequencial</div>
+        </div>
+        
+        <!-- Estatísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalSplits">0</div>
+                <div class="stat-label">Splits Ativos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalDestinations">0</div>
+                <div class="stat-label">Total de Destinos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">🔄</div>
+                <div class="stat-label">Distribuição Sequencial</div>
+            </div>
+        </div>
+        
+        <!-- Formulário de criação -->
+        <div class="card">
+            <h2>➕ Criar Novo Split</h2>
+            <div id="alertContainer"></div>
+            
+            <form id="splitForm">
+                <div class="form-group">
+                    <label for="splitSlug">Slug do Split:</label>
+                    <input type="text" id="splitSlug" placeholder="ex: veloon-v2" required>
+                    <small>Será usado na URL: /api/r/seu-slug</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="splitName">Nome Descritivo:</label>
+                    <input type="text" id="splitName" placeholder="ex: Campanha Veloon V2" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>URLs de Destino:</label>
+                    <div class="destinations-container" id="destinationsContainer">
+                        <div class="destination-item">
+                            <input type="url" placeholder="https://exemplo.com/destino1" required>
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeDestination(this )">Remover</button>
+                        </div>
+                        <div class="destination-item">
+                            <input type="url" placeholder="https://exemplo.com/destino2" required>
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeDestination(this )">Remover</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="addDestination()">+ Adicionar Destino</button>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">🚀 Criar Split</button>
+            </form>
+        </div>
+        
+        <!-- Lista de splits -->
+        <div class="card">
+            <h2>📋 Splits Existentes</h2>
+            <div id="splitsContainer">
+                <p>Carregando splits...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let splits = [];
+        
+        // Carregar splits ao inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSplits();
+        });
+        
+        // Função para carregar splits
+        async function loadSplits() {
+            try {
+                const response = await fetch('/api/splits');
+                if (response.ok) {
+                    splits = await response.json();
+                    renderSplits();
+                    updateStats();
+                } else {
+                    showAlert('Erro ao carregar splits', 'error');
+                }
+            } catch (error) {
+                showAlert('Erro de conexão', 'error');
+            }
+        }
+        
+        // Renderizar lista de splits
+        function renderSplits() {
+            const container = document.getElementById('splitsContainer');
+            
+            if (splits.length === 0) {
+                container.innerHTML = '<p>Nenhum split encontrado. Crie o primeiro!</p>';
+                return;
+            }
+            
+            let html = '<table class="splits-table">';
+            html += '<thead><tr><th>Nome</th><th>Slug</th><th>Destinos</th><th>URL</th><th>Ações</th></tr></thead><tbody>';
+            
+            splits.forEach(split => {
+                const splitUrl = `${window.location.origin}/api/r/${split.slug}`;
+                html += `
+                    <tr>
+                        <td>
+                            <strong>${split.name}</strong>
+                              
+<span class="sequential-badge">Sequencial</span>
+                        </td>
+                        <td><code>${split.slug}</code></td>
+                        <td>${split.total_destinations} destinos</td>
+                        <td>
+                            <div class="split-url" onclick="copyToClipboard('${splitUrl}')">
+                                ${splitUrl}
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger btn-small" onclick="deleteSplit(${split.id})">
+                                🗑️ Deletar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        // Atualizar estatísticas
+        function updateStats() {
+            document.getElementById('totalSplits').textContent = splits.length;
+            const totalDestinations = splits.reduce((sum, split) => sum + split.total_destinations, 0);
+            document.getElementById('totalDestinations').textContent = totalDestinations;
+        }
+        
+        // Adicionar destino
+        function addDestination() {
+            const container = document.getElementById('destinationsContainer');
+            const div = document.createElement('div');
+            div.className = 'destination-item';
+            div.innerHTML = `
+                <input type="url" placeholder="https://exemplo.com/destino" required>
+                <button type="button" class="btn btn-danger btn-small" onclick="removeDestination(this )">Remover</button>
+            `;
+            container.appendChild(div);
+        }
+        
+        // Remover destino
+        function removeDestination(button) {
+            const container = document.getElementById('destinationsContainer');
+            if (container.children.length > 1) {
+                button.parentElement.remove();
+            } else {
+                showAlert('Deve haver pelo menos um destino', 'error');
+            }
+        }
+        
+        // Submeter formulário
+        document.getElementById('splitForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const slug = document.getElementById('splitSlug').value;
+            const name = document.getElementById('splitName').value;
+            const destinationInputs = document.querySelectorAll('#destinationsContainer input');
+            const destinations = Array.from(destinationInputs).map(input => input.value).filter(url => url);
+            
+            if (destinations.length === 0) {
+                showAlert('Adicione pelo menos um destino', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/splits', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        slug: slug,
+                        name: name,
+                        destinations: destinations
+                    })
+                });
+                
+                if (response.ok) {
+                    showAlert('Split criado com sucesso!', 'success');
+                    document.getElementById('splitForm').reset();
+                    // Resetar para 2 destinos padrão
+                    const container = document.getElementById('destinationsContainer');
+                    container.innerHTML = `
+                        <div class="destination-item">
+                            <input type="url" placeholder="https://exemplo.com/destino1" required>
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeDestination(this )">Remover</button>
+                        </div>
+                        <div class="destination-item">
+                            <input type="url" placeholder="https://exemplo.com/destino2" required>
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeDestination(this )">Remover</button>
+                        </div>
+                    `;
+                    loadSplits();
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Erro ao criar split', 'error');
+                }
+            } catch (error) {
+                showAlert('Erro de conexão', 'error');
+            }
+        });
+        
+        // Deletar split
+        async function deleteSplit(id) {
+            if (!confirm('Tem certeza que deseja deletar este split?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/splits/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showAlert('Split deletado com sucesso!', 'success');
+                    loadSplits();
+                } else {
+                    showAlert('Erro ao deletar split', 'error');
+                }
+            } catch (error) {
+                showAlert('Erro de conexão', 'error');
+            }
+        }
+        
+        // Copiar para clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert('URL copiada para a área de transferência!', 'success');
+            });
+        }
+        
+        // Mostrar alerta
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            
+            container.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
