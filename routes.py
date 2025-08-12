@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, redirect
 from models import URLSplit, db
 import json
+from datetime import datetime
 
 url_split_bp = Blueprint('url_split', __name__)
 
@@ -51,10 +52,11 @@ def get_splits():
                 'name': split.name,
                 'destinations': destinations,
                 'created_at': split.created_at.isoformat(),
-                'total_destinations': len(destinations)
+                'total_destinations': len(destinations),
+                'url': f'/api/r/{split.slug}'
             })
         
-        return jsonify(result)
+        return jsonify({'splits': result})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
