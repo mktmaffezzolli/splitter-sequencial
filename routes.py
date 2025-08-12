@@ -174,3 +174,53 @@ def debug_counters():
         'counters': split_counters,
         'splits': debug_data
     })
+    
+@url_split_bp.route('/splits/<int:split_id>', methods=['PUT'])
+def update_split(split_id):
+    """Atualizar split existente"""
+    try:
+        data = request.get_json()
+        
+        # Validações
+        if not data:
+            return jsonify({'error': 'Dados não fornecidos'}), 400
+        
+        name = data.get('name', '').strip()
+        destinations = data.get('destinations', [])
+        
+        if not name:
+            return jsonify({'error': 'Nome é obrigatório'}), 400
+        
+        if not destinations or len(destinations) < 1:
+            return jsonify({'error': 'Pelo menos um destino é obrigatório'}), 400
+        
+        # Buscar split existente
+        split = URLSplit.query.get(split_id)
+        if not split:
+            return jsonify({'error': 'Split não encontrado'}), 404
+        
+        # Atualizar dados
+        split.name = name
+        split.destinations = json.dumps(destinations)
+        split.updated_at = datetime.utcnow()
+        
+        # Salvar no banco
+        db.session.commit()
+        
+        print(f"✅ Split {split.slug} atualizado com sucesso")
+        
+        return jsonify({
+            'message': 'Split atualizado com sucesso',
+            'split': {
+                'id': split.id,
+                'slug': split.slug,
+                'name': split.name,
+                'destinations': destinations,
+                'url': f'/api/r/{split.slug}'
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Erro ao atualizar split: {e}")
+        return jsonify({'error': str(e)}), 500
