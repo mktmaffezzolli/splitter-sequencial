@@ -4,7 +4,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
 # Inicializar Flask
-app = Flask(__name__ )
+app = Flask(__name__)
 CORS(app)
 
 # Configuração do banco de dados
@@ -42,6 +42,7 @@ with app.app_context():
     db.create_all()
     print("✅ Banco de dados inicializado")
 
+# Para desenvolvimento local apenas
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
